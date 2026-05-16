@@ -43,7 +43,7 @@ to, **ask the user before promoting** — promotion crosses repo and
 scope boundaries, so it's a user decision, not an AI one. If approved,
 move to the matching workspace folder (workspace becomes canonical;
 delete the project copy). Don't defer the evaluation — same content
-in two places drifts. See `LOGOS/conventions/logos-structure.md` for
+in two places drifts. See `WORKSPACE/LOGOS/conventions/logos-structure.md` for
 the layering, what lives at each level, and the full promotion
 procedure (including the workspace/project anti-duplication rule).
 
@@ -235,7 +235,7 @@ The workspace allows non-ASCII Unicode in source files written or
 edited by AI agents, with one absolute exception: the 16 invisible
 codepoints that comprise the Trojan Source attack surface
 (CVE-2021-42574 + invisible companions). Those are banned outright,
-enforced by `tools/check-trojan-source.sh` via the pre-commit hook.
+enforced by `WORKSPACE/tools/check-trojan-source.sh` via the pre-commit hook.
 
 This is a deliberate relaxation of an earlier ASCII-only convention,
 which proved too strict in practice. See decision
@@ -291,7 +291,7 @@ Everything else is permitted, including:
 
 | Layer | Codepoints | Enforcement |
 |---|---|---|
-| Hard floor (this policy's only rule) | 16 invisible / control | `tools/check-trojan-source.sh` -- fails commit on detection. Wired into every workspace repo via `core.hooksPath` (set by `admin/git-repo-shape-check.sh`). Also gated in the Stop hook. |
+| Hard floor (this policy's only rule) | 16 invisible / control | `WORKSPACE/tools/check-trojan-source.sh` -- fails commit on detection. Wired into every workspace repo via `core.hooksPath` (set by `WORKSPACE/admin/git-repo-shape-check.sh`). Also gated in the Stop hook. |
 | Forgejo ambiguous Unicode | ~1,618 (en-US locale) | Not enforced. Forgejo displays the warning in its file viewer; it does not block commits. Treat as informational. |
 | Visible typography | All non-control Unicode | Not enforced. Allowed at author / editor discretion. |
 
@@ -304,10 +304,10 @@ RTL text authoring, no emoji-ZWJ sequences in source).
 If a future project genuinely needs to include one of these codepoints
 (e.g., test fixtures that exercise bidi behavior), the right path is:
 
-1. File a decision event under `LOGOS/decisions/` proposing the
+1. File a decision event under `WORKSPACE/LOGOS/decisions/` proposing the
    exception with rationale.
 2. Implement the exception as a path-pattern allowlist in
-   `tools/check-trojan-source.sh`, scoped narrowly (specific files,
+   `WORKSPACE/tools/check-trojan-source.sh`, scoped narrowly (specific files,
    not "anywhere under this dir").
 3. Update this convention doc to describe the exception.
 
@@ -318,7 +318,7 @@ correct response.
 
 When an upstream reference file (e.g., the Unicode
 `emoji-data.txt`) contains a banned codepoint as a glyph sample in
-its own documentation, the file is **not pinned** to `LOGOS/refs/`.
+its own documentation, the file is **not pinned** to `WORKSPACE/LOGOS/refs/`.
 A companion documentation file is written there instead, citing the
 upstream URL and providing a fetch-on-demand command. See decision
 [`019e2f63-...`](../decisions/upstream-files-that-violate-the-security-floor-stay-network-fetched-not-pinned-in-logos-refs.md)
@@ -358,7 +358,7 @@ remains informational and tolerable.
 - [`forgejo-ambiguous-unicode.md`](forgejo-ambiguous-unicode.md) --
   the broader Forgejo / VSCode confusables data, beyond this policy's
   16-codepoint floor.
-- [`tools/check-trojan-source.sh`](../../tools/check-trojan-source.sh)
+- [`WORKSPACE/tools/check-trojan-source.sh`](WORKSPACE/tools/check-trojan-source.sh)
   -- the enforcement script.
 - LOGOS reference event 019e2e33-9b16-7b10-84e7-70485437ed2a --
   authoritative sources for the Unicode source-code attack surface.
@@ -370,7 +370,7 @@ remains informational and tolerable.
 
 `AGENTS.md` and `CLAUDE.md` at the workspace root and at each subproject
 root are **generated artifacts**. The hand-edited truth lives in
-`.source.md` files plus `LOGOS/conventions/*.md`. A single sync script
+`.source.md` files plus `WORKSPACE/LOGOS/conventions/*.md`. A single sync script
 rebuilds the generated files from the sources, and the workspace Stop
 hook runs the sync whenever the sources change.
 
@@ -391,7 +391,7 @@ for the full rationale.
 
 | Path | Role |
 |---|---|
-| `LOGOS/conventions/*.md` | Workspace primitives. Discoverable reference docs and `@-import` targets. |
+| `WORKSPACE/LOGOS/conventions/*.md` | Workspace primitives. Discoverable reference docs and `@-import` targets. |
 | `AGENTS.source.md` (workspace root) | Workspace-level prose. May `@-import` workspace primitives. |
 | `<subproject>/AGENTS.source.md` | Optional per-project prose. May `@-import` project-level primitives or use `../` to reach workspace primitives. Missing means "inherit workspace only". |
 | `<subproject>/*.source.md` | Optional additional project-level primitives that the project `AGENTS.source.md` can compose. |
@@ -427,13 +427,13 @@ boundary, the script resolves each side independently:
    Write to `<subproject>/AGENTS.md` and `<subproject>/CLAUDE.md`.
 
 Resolving the two sides separately means a workspace primitive like
-`LOGOS/conventions/WORKFLOW.md` is not mis-resolved against a
+`WORKSPACE/LOGOS/conventions/WORKFLOW.md` is not mis-resolved against a
 subproject's root, and a subproject primitive is not mis-resolved
 against the workspace's root.
 
 ## The sync script
 
-`tools/sync-agent-files.sh` is the build:
+`WORKSPACE/tools/sync-agent-files.sh` is the build:
 
 - Reads source from `${script_dir}/../AGENTS.source.md`, so running
   from the main worktree at `/home/ivan/DEVELOPMENT/tools/` builds the
@@ -452,9 +452,9 @@ against the workspace's root.
 
 ## Stop hook auto-rebuild
 
-The workspace Stop hook (`tools/stop-hook.sh`) reruns the sync when any
+The workspace Stop hook (`WORKSPACE/tools/stop-hook.sh`) reruns the sync when any
 source file has uncommitted changes -- `AGENTS.source.md` at the
-workspace root or any `LOGOS/conventions/*.md`. The hook stages the
+workspace root or any `WORKSPACE/LOGOS/conventions/*.md`. The hook stages the
 regenerated workspace `AGENTS.md` and `CLAUDE.md` so they ride along
 with the source edit in the same auto-commit. Subproject files are
 written to disk by the sync (so subproject sessions see fresh content
@@ -503,7 +503,7 @@ markdown that any agent can consume.
 
 The mirror's hand-edited source file model also fought the
 single-source-of-truth principle: workspace conventions lived in
-`LOGOS/conventions/*.md` AND were `@-imported` into AGENTS.md AND were
+`WORKSPACE/LOGOS/conventions/*.md` AND were `@-imported` into AGENTS.md AND were
 mirror-copied with imports inlined to each subproject. Three places
 to think about. The build-pipeline collapses that to: sources in one
 location, generated artifacts everywhere they're needed, one script
@@ -519,8 +519,8 @@ Before any "removed" / "moved" / "deprecated" / "added in vX" /
 Verification methods, by claim type:
 
 - **API claims** (type exists, member moved, class removed): grep the
-  shipped NuGet XML doc with `tools/nuget-xml.sh <package> <version> <pattern>`,
-  or run the assembly probe documented in `LOGOS/conventions/FSHARP.md`
+  shipped NuGet XML doc with `WORKSPACE/tools/nuget-xml.sh <package> <version> <pattern>`,
+  or run the assembly probe documented in `WORKSPACE/LOGOS/conventions/FSHARP.md`
   → "Verifying a NuGet package's public API"
 - **Behavior claims** (this code does X): sample compile / sample run /
   read the official changelog
@@ -545,7 +545,7 @@ Before creating any file under `<project>/LOGOS/decisions/`,
 `<project>/LOGOS/findings/`, `<project>/LOGOS/observations/`, or any
 workspace `LOGOS/` event-sourced folder (decisions, observations,
 questions, references, experiments, corrections): **read
-`LOGOS/methods/event-sourcing-as-knowledge-store.md` first**.
+`WORKSPACE/LOGOS/methods/event-sourcing-as-knowledge-store.md` first**.
 
 Format is **TOML + UUIDv7** (`<type>/<uuidv7>.toml`):
 
@@ -566,14 +566,14 @@ file, stop and read the methodology.
 ## Library usage protocol — REQUIRED before and after using any library
 
 **Before importing, calling, or adding any library (NuGet, npm, or
-otherwise): check `LOGOS/libs/` for that library's notes file, and read
+otherwise): check `WORKSPACE/LOGOS/libs/` for that library's notes file, and read
 it first if present.**
 
 Locations:
 
-- Single-file form: `LOGOS/libs/<lib-name>.md` (e.g., `cscheck.md`,
+- Single-file form: `WORKSPACE/LOGOS/libs/<lib-name>.md` (e.g., `cscheck.md`,
   `verify.md`)
-- Multi-topic form: `LOGOS/libs/<lib-name>/<topic>.md` (e.g.,
+- Multi-topic form: `WORKSPACE/LOGOS/libs/<lib-name>/<topic>.md` (e.g.,
   `fun-blazor/styling.md`)
 
 If a file exists: read it first. It contains accumulated project findings
@@ -609,7 +609,7 @@ When `libs/<lib>.md` doesn't cover it, fall back to outside sources in
 **cost / value order** (lowest cost and best information density first):
 
 1. **NuGet cache XML doc** at `~/.nuget/packages/<id>/<version>/lib/<tfm>/*.xml`
-   — use `tools/nuget-xml.sh <pkg> <ver> <pattern>` (grep) or
+   — use `WORKSPACE/tools/nuget-xml.sh <pkg> <ver> <pattern>` (grep) or
    `--surface` (full type list per namespace). Local, instant, and
    informative when present and complete. **Caveat**: XML doc
    generation is opt-in by package authors — entries can be missing
@@ -633,13 +633,13 @@ to repeat the search.
 **Verify before claiming** applies to every libs/ write — see the
 top-level "Verify before claiming" section for the full directive.
 
-This is how `LOGOS/libs/` grows. Without it, every session re-discovers
+This is how `WORKSPACE/LOGOS/libs/` grows. Without it, every session re-discovers
 the same gotchas.
 
 ## .NET / NuGet packaging — REQUIRED before adding packages or editing nuget.config
 
 **Before adding a `PackageReference`, creating a project, or modifying
-`nuget.config`: read `LOGOS/conventions/nuget-feeds.md`.**
+`nuget.config`: read `WORKSPACE/LOGOS/conventions/nuget-feeds.md`.**
 
 The workspace uses three NuGet feeds (`nuget.org`, `FnTools`,
 `IvanTheGeek`) and overlays specific public packages (currently
@@ -654,7 +654,7 @@ overlays.
 `.fsproj`, `.csproj`, `.fs`, or `.fsx`): verify the public API at the
 version you'll resolve to. The shipped XML doc at
 `~/.nuget/packages/<pkg>/<version>/lib/<tfm>/*.xml` is the authoritative
-API surface for that version. Use `tools/nuget-xml.sh <package> <version> <pattern>`
+API surface for that version. Use `WORKSPACE/tools/nuget-xml.sh <package> <version> <pattern>`
 to grep it, or `--surface` for the full type list. Training-time
 knowledge can be one or two major versions stale; the 30 seconds to
 verify saves compile-fix cycles AND prevents confidently-wrong API
@@ -664,7 +664,7 @@ the first time.
 ## F# code — REQUIRED reading before any F# work
 
 **Before writing or modifying any `.fs`, `.fsx`, or `.fsproj` file, read
-`LOGOS/conventions/FSHARP.md` first.** That file (~500 lines) is the
+`WORKSPACE/LOGOS/conventions/FSHARP.md` first.** That file (~500 lines) is the
 canonical F# rulebook for this workspace and covers:
 
 - Wlaschin / DMMF principles — illegal states unrepresentable, `Result`
@@ -707,6 +707,6 @@ round-trip breakage, custom-op visibility issues, etc.).
   use whatever typography reads naturally (em dash, smart quotes,
   arrows, math operators, etc.). Only the bidi-control + invisible
   codepoints (CVE-2021-42574 + companions) are banned, enforced by
-  `tools/check-trojan-source.sh` via the pre-commit hook. See
-  `LOGOS/conventions/unicode-policy.md` for the full rule, the exact
+  `WORKSPACE/tools/check-trojan-source.sh` via the pre-commit hook. See
+  `WORKSPACE/LOGOS/conventions/unicode-policy.md` for the full rule, the exact
   16 codepoints, and the trade-offs behind this policy.
