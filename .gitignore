@@ -369,4 +369,5 @@ deploy/
 
 global.json
 
-Cache/
+Cache/.claude/
+.claude/
