@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "/home/ivan/DEVELOPMENT/Fun.Css/tools/stop-hook.sh"
+            "command": "/home/ivan/DEVELOPMENT/tools/stop-hook.sh"
           }
         ]
       }
